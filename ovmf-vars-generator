@@ -20,6 +20,7 @@ import tempfile
 import shutil
 import string
 import subprocess
+import time
 
 
 def strip_special(line):
@@ -116,6 +117,8 @@ def enroll_keys(args):
     if args.print_output:
         print(strip_special(read), end='')
         print()
+    # Give firmware some time to boot past boot manager
+    time.sleep(2)
     # Send the escape char to enter the UEFI shell early
     p.stdin.write(b'\x1b')
     p.stdin.flush()
