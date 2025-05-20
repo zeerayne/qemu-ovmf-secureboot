@@ -216,7 +216,7 @@ def parse_args():
                         help='Never download a kernel')
     parser.add_argument('--fedora-version',
                         help='Fedora version to get kernel for checking',
-                        default='27')
+                        default='36')
     parser.add_argument('--kernel-url', help='Kernel URL',
                         default='https://archives.fedoraproject.org/pub'
                                 '/archive/fedora/linux/releases/%(version)s'
