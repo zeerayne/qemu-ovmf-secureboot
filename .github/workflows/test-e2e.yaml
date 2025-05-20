@@ -22,7 +22,7 @@ jobs:
 
     - name: Run full flow without oem-string
       run: |
-        docker run --rm -it $DOCKER_IMAGE_TAG ovmf-vars-generator --kernel-path=vmlinuz --print-output output.vars
+        docker run --rm $DOCKER_IMAGE_TAG ovmf-vars-generator --kernel-path=vmlinuz --print-output output.vars
 
     - name: Create cert for oem-string
       run: |
@@ -32,12 +32,12 @@ jobs:
 
     - name: Run full flow with oem-string
       run: |
-        docker run --rm -it $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz output.vars --oem-string "$(< PkKek1.oemstr)"
+        docker run --rm $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz output.vars --oem-string "$(< PkKek1.oemstr)"
 
     - name: Run enrollment-only with oem-string
       run: |
-        docker run -v ./vars:/app/vars --rm -it $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz vars/outputsplit.vars --skip-testing --oem-string "$(< PkKek1.oemstr)"
+        docker run -v ./vars:/app/vars --rm $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz vars/outputsplit.vars --skip-testing --oem-string "$(< PkKek1.oemstr)"
 
     - name: Run testing-only with oem-string
       run: |
-        docker run -v ./vars:/app/vars --rm -it $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz vars/outputsplit.vars --skip-enrollment
+        docker run -v ./vars:/app/vars --rm $DOCKER_IMAGE_TAG ovmf-vars-generator --verbose --print-output --kernel-path vmlinuz vars/outputsplit.vars --skip-enrollment
