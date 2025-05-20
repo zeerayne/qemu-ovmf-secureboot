@@ -90,33 +90,6 @@ def download(url, target, suffix, no_download):
 def enroll_keys(args):
     shutil.copy(args.ovmf_template_vars, args.out_temp)
 
-    if args.oem_string is None:
-        logging.info('Empty oem string received, generating')
-
-        cert = 'secureboot.pem'
-
-        cmd = [
-            'openssl',
-            'req',
-            '-x509',
-            '-newkey',
-            'rsa:2048',
-            '-nodes',
-            '-subj', '/C=XX/ST=Test/L=EnrollTest/O=Xxx/CN=www.example.com',
-            '-outform', 'PEM',
-            '-keyout', 'secureboot.private.key',
-            '-out', cert
-        ]
-
-        p = subprocess.Popen(cmd)
-        p.wait()
-
-        with open(cert, 'r') as file:
-            certdata = file.read()
-        args.oem_string = [
-            certdata.replace("-----BEGIN CERTIFICATE-----","4e32566d-8e9e-4f52-81d3-5bb9715f9727:").replace("-----END CERTIFICATE-----", "").replace('\n', '')
-        ]
-
     logging.info('Starting enrollment')
 
     cmd = generate_qemu_cmd(
@@ -209,6 +182,32 @@ def test_keys(args):
         if kerneltemp:
             os.remove(kernel)
 
+def generate_cert():
+        logging.info('Empty oem string received, generating certificate')
+
+        cert = 'secureboot.pem'
+
+        cmd = [
+            'openssl',
+            'req',
+            '-x509',
+            '-newkey',
+            'rsa:2048',
+            '-nodes',
+            '-subj', '/C=XX/ST=Test/L=EnrollTest/O=Xxx/CN=www.example.com',
+            '-outform', 'PEM',
+            '-keyout', 'secureboot.private.key',
+            '-out', cert
+        ]
+
+        p = subprocess.Popen(cmd)
+        p.wait()
+
+        with open(cert, 'r') as file:
+            certdata = file.read()
+        return [
+            certdata.replace("-----BEGIN CERTIFICATE-----","4e32566d-8e9e-4f52-81d3-5bb9715f9727:").replace("-----END CERTIFICATE-----", "").replace('\n', '')
+        ]
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -282,7 +281,7 @@ def validate_args(args):
         raise Exception('%s already exists' % args.output)
 
     if args.skip_enrollment and not os.path.exists(args.output):
-        raise Exception('%s does not yet exist' % args.output)
+        raise Exception(f'{args.output} does not yet exist')
 
     verbosity = (args.verbose or 1) - (args.quiet or 0)
     if verbosity >= 2:
@@ -311,6 +310,8 @@ def move_to_dest(args):
 def main():
     args = parse_args()
     if not args.skip_enrollment:
+        if args.oem_string is None:
+            args.oem_string = generate_cert()
         enroll_keys(args)
     if not args.skip_testing:
         test_keys(args)
