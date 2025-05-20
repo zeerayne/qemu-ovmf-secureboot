@@ -90,6 +90,33 @@ def download(url, target, suffix, no_download):
 def enroll_keys(args):
     shutil.copy(args.ovmf_template_vars, args.out_temp)
 
+    if args.oem_string is None:
+        logging.info('Empty oem string received, generating')
+
+        cert = 'secureboot.pem'
+
+        cmd = [
+            'openssl',
+            'req',
+            '-x509',
+            '-newkey',
+            'rsa:2048',
+            '-nodes',
+            '-subj', '/C=XX/ST=Test/L=EnrollTest/O=Xxx/CN=www.example.com',
+            '-outform', 'PEM',
+            '-keyout', 'secureboot.private.key',
+            '-out', cert
+        ]
+
+        p = subprocess.Popen(cmd)
+        p.wait()
+
+        with open(cert, 'r') as file:
+            certdata = file.read()
+        args.oem_string = [
+            certdata.replace("-----BEGIN CERTIFICATE-----","4e32566d-8e9e-4f52-81d3-5bb9715f9727:").replace("-----END CERTIFICATE-----", "").replace('\n', '')
+        ]
+
     logging.info('Starting enrollment')
 
     cmd = generate_qemu_cmd(
